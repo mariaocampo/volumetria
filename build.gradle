@@ -1,0 +1,29 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.20.RELEASE'
+	}
+}
+
+plugins {
+	id 'java'
+}
+
+apply plugin: 'org.springframework.boot'
+
+group = 'co.com.ibm'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.springframework.boot:spring-boot-starter-web'
+	testCompile 'org.springframework.boot:spring-boot-starter-test'
+	compile group: 'org.apache.poi', name: 'poi', version: '4.1.0'
+	compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.0'
+}
