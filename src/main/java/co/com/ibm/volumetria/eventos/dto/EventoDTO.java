@@ -18,6 +18,8 @@ public class EventoDTO {
 	private String variableAlertada;
 	private String plataforma;
 	private String id;
+	private String mes;
+	private String lineaBase;
 	
 	public EventoDTO() {
 		super();
@@ -26,7 +28,8 @@ public class EventoDTO {
 
 	public EventoDTO(int idIncidente, String aplicacion, String clase, Date fechaApertura, String descripcion,
 			String prioridad, String usuarioReporta, String grupoReporta, String tipoFalla, String familia,
-			String responsable, String variableAlertada, String plataforma, String id) {
+			String responsable, String variableAlertada, String plataforma, String id, String mes,
+			String lineaBase) {
 		super();
 		this.idIncidente = idIncidente;
 		this.aplicacion = aplicacion;
@@ -42,6 +45,8 @@ public class EventoDTO {
 		this.variableAlertada = variableAlertada;
 		this.plataforma = plataforma;
 		this.id = id;
+		this.mes = mes;
+		this.lineaBase = lineaBase;
 	}
 
 	public int getIdIncidente() {
@@ -154,6 +159,22 @@ public class EventoDTO {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getMes() {
+		return mes;
+	}
+
+	public void setMes(String mes) {
+		this.mes = mes;
+	}
+
+	public String getLineaBase() {
+		return lineaBase;
+	}
+
+	public void setLineaBase(String lineaBase) {
+		this.lineaBase = lineaBase;
 	}
 	
 }

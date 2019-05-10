@@ -35,6 +35,10 @@ public class Constantes {
     public static final String RESPONSABLE_CGM = "cgm";
     public static final int PRIORIDAD_CGM = 5;
     public static final String FORMATO_CONTRUCCION_FECHA = "yyyy-MM-dd HH:mm:ss";
+    public static final String[] VARIABLES_LINEA_BASE = {"ASP","DISCO","MEMORIA","FILE SYSTEM","CPU"};
+    
+    public static final String LINEA_BASE = "Línea Base";
+    public static final String LINEA_BASE_OTROS = "Otros";
     
     //Constantes posiciones celdas reporte final
     public static final int CELDA_IDINCIDENTE_REPORTE = 0;
@@ -49,6 +53,10 @@ public class Constantes {
     public static final int CELDA_CRITICOMAYOR_REPORTE = 9;
     public static final int CELDA_PLATAFORMA_REPORTE = 10;
     public static final int CELDA_RESPONSABLE_REPORTE = 11;
+    public static final int CELDA_MES_REPORTE = 12;
+    public static final int CELDA_LINEA_BASE_REPORTE = 13;
+    public static final int CELDA_ASIGNATARIO_REPORTE = 14;
+    public static final int CELDA_GRUPOREPORTA_REPORTE = 15;
     
     //Constantes nombres headers reporte final
     public static final String HEADER_IDINCIDENTE_REPORTE = "Evento_Critico";
@@ -63,6 +71,8 @@ public class Constantes {
     public static final String HEADER_CRITICOMAYOR_REPORTE = "Critico_Mayor";
     public static final String HEADER_PLATAFORMA_REPORTE = "Plataforma";
     public static final String HEADER_RESPONSABLE_REPORTE = "Responsable";
+    public static final String HEADER_MES_REPORTE = "mes";
+    public static final String HEADER_LINEA_BASE_REPORTE = "lineabase";
     public static final String NOMBRE_SHEET_IBM = "DATA IBM";
     public static final String NOMBRE_SHEET_CGM = "DATA CGM";
     public static final String FORMATO_CELDA_FECHA = "dd/MM/yyyy HH:mm:ss";
@@ -80,4 +90,13 @@ public class Constantes {
     public static final int PRIORIDAD_CRITICA_VALOR = 5;
     public static final int PRIORIDAD_MEDIA_VALOR = 4;
     public static final int PRIORIDAD_BAJA_VALOR = 3;
+    
+    //Constantes file Asignatarios/Torres
+    public static final String ASIGNATARIO_INVALIDO = "Valide la existencia del asignatario";
+    public static final int SHEET_CONDICIONES_ASIGNATARIOS = 3;
+    public static final int CELDA_ASIGNATARIO = 0;
+    public static final int CELDA_TORRE_ASIGNATARIO = 1;
+    public static final int SHEET_CONDICIONES_GRUPOS = 4;
+    public static final int CELDA_GRUPO = 0;
+    public static final int CELDA_TORRE_GRUPO = 1;
 }

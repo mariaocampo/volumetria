@@ -1,10 +1,11 @@
 package co.com.ibm.volumetria.eventos.clasificacion;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.poi.EncryptedDocumentException;
@@ -42,4 +43,28 @@ public class Clasificacion  {
 		return categoria;
 	}
 	
+	public String asignacionPlataformaPorAsignatario(String asignatario, String grupoReporta) throws EncryptedDocumentException, IOException {
+		Sheet fileAsignatarios = WorkbookFactory.create(new File(Constantes.CONDICIONES_XLSX_FILE_PATH)).getSheetAt(Constantes.SHEET_CONDICIONES_ASIGNATARIOS);
+		Map<String, String> mapAsignatarios = new HashMap<String, String>();
+		fileAsignatarios.forEach(row -> {
+			mapAsignatarios.put(row.getCell(Constantes.CELDA_ASIGNATARIO).getStringCellValue().toLowerCase(), row.getCell(Constantes.CELDA_TORRE_ASIGNATARIO).getStringCellValue());
+		});
+		
+		fileAsignatarios.getWorkbook().close();
+		String plataforma = mapAsignatarios.getOrDefault(asignatario.toLowerCase(), Constantes.ASIGNATARIO_INVALIDO);
+		
+		return !plataforma.equals(Constantes.ASIGNATARIO_INVALIDO) ? plataforma : validarPlataformaPorGrupo(grupoReporta);
+	}
+
+	private String validarPlataformaPorGrupo(String grupoReporta) throws EncryptedDocumentException, IOException {
+		Sheet fileGrupos = WorkbookFactory.create(new File(Constantes.CONDICIONES_XLSX_FILE_PATH)).getSheetAt(Constantes.SHEET_CONDICIONES_GRUPOS);
+		Map<String, String> mapGrupos = new HashMap<String, String>();
+		fileGrupos.forEach(row -> {
+			mapGrupos.put(row.getCell(Constantes.CELDA_GRUPO).getStringCellValue().toLowerCase(), row.getCell(Constantes.CELDA_TORRE_GRUPO).getStringCellValue());
+		});
+		
+		fileGrupos.getWorkbook().close();
+		
+		return mapGrupos.getOrDefault(grupoReporta.toLowerCase(), Constantes.ASIGNATARIO_INVALIDO );
+	}
 }

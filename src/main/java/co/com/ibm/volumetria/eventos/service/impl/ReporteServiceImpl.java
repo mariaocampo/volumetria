@@ -4,8 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.poi.EncryptedDocumentException;
@@ -34,6 +37,8 @@ public class ReporteServiceImpl implements ReporteService {
 
 	@Autowired
 	Clasificacion clasificacion;
+	
+	List<String> lineaBase = Arrays.asList(Constantes.VARIABLES_LINEA_BASE);
 	
 	@Override
 	public Workbook generarReporte(Sheet ibm, Sheet cgm) throws FileNotFoundException, IOException {
@@ -68,7 +73,7 @@ public class ReporteServiceImpl implements ReporteService {
 		   row.createCell(Constantes.CELDA_TIPOFALLA_REPORTE).setCellValue(evento.getTipoFalla());
 		   row.createCell(Constantes.CELDA_DETALLEVARIABLEALERTADA_REPORTE).setCellValue(evento.getDescripcion());
 		   row.createCell(Constantes.CELDA_CRITICOMAYOR_REPORTE).setCellValue(Constantes.PRIORIDAD_CRITICA_VALOR);
-		   row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(evento.getPlataforma());
+		   row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(evento.getPlataforma().toUpperCase());
 		   row.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(evento.getResponsable());
 		   try {
 			   String clasificacionID = clasificacion.clasificacionCategoriaVariableAlertada(evento.getDescripcion(), Constantes.SHEET_CONDICIONES_CGM);
@@ -78,6 +83,10 @@ public class ReporteServiceImpl implements ReporteService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		   LocalDate localDateApertura = evento.getFechaApertura().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		   row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateApertura.getMonthValue() + "-" + localDateApertura.getYear());
+		   String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
+		   row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
 	   });
 	}
 
@@ -100,24 +109,33 @@ public class ReporteServiceImpl implements ReporteService {
 		   row.createCell(Constantes.CELDA_TIPOFALLA_REPORTE).setCellValue(evento.getTipoFalla());
 		   row.createCell(Constantes.CELDA_DETALLEVARIABLEALERTADA_REPORTE).setCellValue(evento.getDescripcion());
 		   row.createCell(Constantes.CELDA_CRITICOMAYOR_REPORTE).setCellValue(asignarPrioridad(evento.getPrioridad()));
-		   row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(evento.getPlataforma());
+		   try {
+				row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(clasificacion.asignacionPlataformaPorAsignatario(evento.getUsuarioReporta(), evento.getGrupoReporta()));
+			} catch (EncryptedDocumentException | IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		   row.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(evento.getResponsable());
 		   try {
 			   String clasificacionID = clasificacion.clasificacionCategoriaVariableAlertada(evento.getDescripcion(), Constantes.SHEET_CONDICIONES_IBM);
 			   row.createCell(Constantes.CELDA_ID_REPORTE).setCellValue(clasificacionID);
 			   row.createCell(Constantes.CELDA_VARIABLEALERTADA_REPORTE).setCellValue(clasificacionID);
-		   } catch (EncryptedDocumentException | IOException e) {
+		   	} catch (EncryptedDocumentException | IOException e) {
 			   // TODO Auto-generated catch block
 			   e.printStackTrace();
-		   }
+		   	}
+		   LocalDate localDateApertura = evento.getFechaApertura().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		   row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateApertura.getMonthValue() + "-" + localDateApertura.getYear());
+		   String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
+		   row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
 		});
 	}
 
 	private int asignarPrioridad(String prioridad) {
 		int prioridadValor = Constantes.PRIORIDAD_BAJA_VALOR;
-		if(prioridad == Constantes.PRIORIDAD_CRITICA) {
+		if(prioridad.equals(Constantes.PRIORIDAD_CRITICA)) {
 			prioridadValor = Constantes.PRIORIDAD_CRITICA_VALOR;
-		}else if(prioridad == Constantes.PRIORIDAD_MEDIA){
+		}else if(prioridad.equals(Constantes.PRIORIDAD_MEDIA)){
 			prioridadValor = Constantes.PRIORIDAD_MEDIA_VALOR;
 		}
 		return prioridadValor;
@@ -158,7 +176,11 @@ public class ReporteServiceImpl implements ReporteService {
 		header.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(Constantes.HEADER_PLATAFORMA_REPORTE);
 		header.getCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellStyle(styleHeader);
 		header.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(Constantes.HEADER_RESPONSABLE_REPORTE);
-		header.getCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellStyle(styleHeader);		
+		header.getCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellStyle(styleHeader);
+		header.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(Constantes.HEADER_MES_REPORTE);
+		header.getCell(Constantes.CELDA_MES_REPORTE).setCellStyle(styleHeader);
+		header.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(Constantes.HEADER_LINEA_BASE_REPORTE);
+		header.getCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellStyle(styleHeader);
 	}
 
 	private List<EventoDTO> construirListaEventosCGM(Sheet cgm) {
