@@ -67,4 +67,16 @@ public class Clasificacion  {
 		
 		return mapGrupos.getOrDefault(grupoReporta.toLowerCase(), Constantes.ASIGNATARIO_INVALIDO );
 	}
+	
+	public String asignarEscalamientoAlertas(String descripcion) {
+		String escalamiento = Constantes.ESCALAMIENTO_ADMIN;
+		
+		if(Constantes.VALIDACION_SL.matcher(descripcion).find()) {
+			escalamiento = Constantes.ESCALAMIENTO_SL;
+		}else if(Constantes.VALIDACION_SLL.matcher(descripcion).find()) {
+			escalamiento = Constantes.ESCALAMIENTO_SLL;
+		}
+		
+		return escalamiento;
+	}
 }

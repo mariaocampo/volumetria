@@ -1,8 +1,13 @@
 package co.com.ibm.volumetria.eventos.controller;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import org.apache.poi.EncryptedDocumentException;
@@ -14,6 +19,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.opencsv.CSVReader;
 
 import co.com.ibm.volumetria.eventos.service.ReporteService;
 import co.com.ibm.volumetria.eventos.utils.Constantes;
@@ -36,8 +43,10 @@ public class ReporteController {
 		
 		Sheet ibm = WorkbookFactory.create(new File(Constantes.IBM_XLSX_FILE_PATH)).getSheetAt(Constantes.INDEX_FILE);
 		Sheet cgm = WorkbookFactory.create(new File(Constantes.CGM_XLSX_FILE_PATH)).getSheetAt(Constantes.INDEX_FILE);
-		
-		Workbook workbookReporte = reporteService.generarReporte(ibm, cgm);
+		//BufferedReader alertas = new BufferedReader(new InputStreamReader(new FileInputStream(Constantes.ALERTAS_XLSX_FILE_PATH)));
+		//Sheet alertas = WorkbookFactory.create(new File(Constantes.ALERTAS_XLSX_FILE_PATH)).getSheetAt(Constantes.INDEX_FILE);
+		CSVReader alertas = new CSVReader(new FileReader(Constantes.ALERTAS_XLSX_FILE_PATH));
+		Workbook workbookReporte = reporteService.generarReporte(ibm, cgm, alertas);
 		
 		try (OutputStream fileOut = new FileOutputStream("resultado.xlsx")) {
 			workbookReporte.write(fileOut);

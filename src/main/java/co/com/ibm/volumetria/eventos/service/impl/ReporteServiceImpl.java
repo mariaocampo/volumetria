@@ -8,8 +8,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -27,7 +27,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.opencsv.CSVReader;
+
 import co.com.ibm.volumetria.eventos.clasificacion.Clasificacion;
+import co.com.ibm.volumetria.eventos.dto.AlertaDTO;
 import co.com.ibm.volumetria.eventos.dto.EventoDTO;
 import co.com.ibm.volumetria.eventos.service.ReporteService;
 import co.com.ibm.volumetria.eventos.utils.Constantes;
@@ -41,53 +44,148 @@ public class ReporteServiceImpl implements ReporteService {
 	List<String> lineaBase = Arrays.asList(Constantes.VARIABLES_LINEA_BASE);
 	
 	@Override
-	public Workbook generarReporte(Sheet ibm, Sheet cgm) throws FileNotFoundException, IOException {
+	public Workbook generarReporte(Sheet ibm, Sheet cgm, CSVReader alertas) throws FileNotFoundException, IOException {
 
 		List<EventoDTO> listaEventosIBM = construirListaEventosIBM(ibm);
 		List<EventoDTO> listaEventosCGM = construirListaEventosCGM(cgm);
+		List<AlertaDTO> listaAlertas = construirListaAlertas(alertas);
 		
 		Workbook reporteVolumetriaEventos = new XSSFWorkbook();
 
 		construirDataIBM(listaEventosIBM, reporteVolumetriaEventos);
 		construirDataCGM(listaEventosCGM, reporteVolumetriaEventos);
+		construirDataAlertas(listaAlertas, reporteVolumetriaEventos);
 		   
 		return reporteVolumetriaEventos;
 	}
 
-	private void construirDataCGM(List<EventoDTO> listaEventosCGM, Workbook reporteVolumetriaEventos) {
-		Sheet hojaCGM = reporteVolumetriaEventos.createSheet(Constantes.NOMBRE_SHEET_CGM);
-	   Row header = hojaCGM.createRow(hojaCGM.getLastRowNum());
-	   crearHeaderReporte(header,reporteVolumetriaEventos);
-	   CreationHelper createHelper = reporteVolumetriaEventos.getCreationHelper();
-	   CellStyle cellStyleDate = reporteVolumetriaEventos.createCellStyle();
-	   cellStyleDate.setDataFormat(
+	private void construirDataAlertas(List<AlertaDTO> listaAlertas, Workbook reporteVolumetriaEventos) {
+		Sheet hojaAlerta = reporteVolumetriaEventos.createSheet(Constantes.NOMBRE_SHEET_ALERTAS);
+		Row header = hojaAlerta.createRow(hojaAlerta.getLastRowNum());
+		crearHeaderReporte(header,reporteVolumetriaEventos);
+		CreationHelper createHelper = reporteVolumetriaEventos.getCreationHelper();
+		CellStyle cellStyleDate = reporteVolumetriaEventos.createCellStyle();
+	    cellStyleDate.setDataFormat(
 		        createHelper.createDataFormat().getFormat(Constantes.FORMATO_CELDA_FECHA));
-	   listaEventosCGM.forEach(evento -> {
-		   Row row = hojaCGM.createRow(hojaCGM.getLastRowNum()+1);
-		   row.createCell(Constantes.CELDA_IDINCIDENTE_REPORTE).setCellValue(evento.getIdIncidente());
-		   row.createCell(Constantes.CELDA_SERVIDOR_REPORTE).setCellValue(evento.getAplicacion());
-		   row.createCell(Constantes.CELDA_DETALLESERVIDOR_REPORTE).setCellValue(evento.getClase());
-		   row.createCell(Constantes.CELDA_FECHAALERTA_REPORTE).setCellValue(evento.getFechaApertura());;
-		   row.getCell(Constantes.CELDA_FECHAALERTA_REPORTE).setCellStyle(cellStyleDate);
-		   row.createCell(Constantes.CELDA_FAMILIA_REPORTE).setCellValue(evento.getFamilia());
-		   row.createCell(Constantes.CELDA_TIPOFALLA_REPORTE).setCellValue(evento.getTipoFalla());
-		   row.createCell(Constantes.CELDA_DETALLEVARIABLEALERTADA_REPORTE).setCellValue(evento.getDescripcion());
-		   row.createCell(Constantes.CELDA_CRITICOMAYOR_REPORTE).setCellValue(Constantes.PRIORIDAD_CRITICA_VALOR);
-		   row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(evento.getPlataforma().toUpperCase());
-		   row.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(evento.getResponsable());
-		   try {
-			   String clasificacionID = clasificacion.clasificacionCategoriaVariableAlertada(evento.getDescripcion(), Constantes.SHEET_CONDICIONES_CGM);
-			   row.createCell(Constantes.CELDA_ID_REPORTE).setCellValue(clasificacionID);
-			   row.createCell(Constantes.CELDA_VARIABLEALERTADA_REPORTE).setCellValue(clasificacionID);	
+	    listaAlertas.forEach(alerta ->{
+	    	Row row = hojaAlerta.createRow(hojaAlerta.getLastRowNum()+1);
+	    	row.createCell(Constantes.CELDA_IDINCIDENTE_REPORTE).setCellValue(alerta.getServerSerial());
+	    	row.createCell(Constantes.CELDA_SERVIDOR_REPORTE).setCellValue(alerta.getNode());
+	    	row.createCell(Constantes.CELDA_DETALLESERVIDOR_REPORTE).setCellValue(alerta.getNodeAlias());
+	    	row.createCell(Constantes.CELDA_FECHAALERTA_REPORTE).setCellValue(alerta.getFirstOccurrence());
+		    row.getCell(Constantes.CELDA_FECHAALERTA_REPORTE).setCellStyle(cellStyleDate);
+		    row.createCell(Constantes.CELDA_FAMILIA_REPORTE).setCellValue(Constantes.NO_APLICA);
+		    row.createCell(Constantes.CELDA_TIPOFALLA_REPORTE).setCellValue(Constantes.TIPO_FALLA_ALERTA);
+		    String clasificacionID;
+			try {
+				clasificacionID = alerta.getSubComponent().isEmpty() ? clasificacion.clasificacionCategoriaVariableAlertada(alerta.getSubComponent(), Constantes.SHEET_CONDICIONES_ALERTAS) : alerta.getSubComponent();
+				System.out.println(clasificacionID);
+				row.createCell(Constantes.CELDA_ID_REPORTE).setCellValue(clasificacionID);
+				row.createCell(Constantes.CELDA_VARIABLEALERTADA_REPORTE).setCellValue(clasificacionID);
 			} catch (EncryptedDocumentException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		   LocalDate localDateApertura = evento.getFechaApertura().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		   row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateApertura.getMonthValue() + "-" + localDateApertura.getYear());
-		   String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
-		   row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
-	   });
+			row.createCell(Constantes.CELDA_DETALLEVARIABLEALERTADA_REPORTE).setCellValue(alerta.getSummary());
+			row.createCell(Constantes.CELDA_CRITICOMAYOR_REPORTE).setCellValue(alerta.getSeverity());
+			row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(alerta.getComponent());
+			row.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(Constantes.RESPONSABLE_ALERTAS);
+			LocalDate localDateFirstOccurrence = alerta.getFirstOccurrence().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateFirstOccurrence.getMonthValue() + "-" + localDateFirstOccurrence.getYear());
+			row.createCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellValue(clasificacion.asignarEscalamientoAlertas(alerta.getSummary().toLowerCase()));
+	    });
+		
+	}
+
+	private List<AlertaDTO> construirListaAlertas(CSVReader alertas) {
+	    SimpleDateFormat formatterFechaAlerta = new SimpleDateFormat(Constantes.FORMATO_CONTRUCCION_FECHA);  
+		List<AlertaDTO> listaAlertas = new ArrayList<AlertaDTO>();
+		alertas.forEach(parametro ->{
+			AlertaDTO alerta = new AlertaDTO();
+			alerta.setServerSerial(parametro[Constantes.POSICION_SERVERSERIAL]);
+			alerta.setSerial(parametro[Constantes.POSICION_SERIAL]);
+			alerta.setComponent(parametro[Constantes.POSICION_COMPONENT]);
+			alerta.setSubComponent(parametro[Constantes.POSICION_SUBCOMPONENT]);
+			alerta.setEscalar(parametro[Constantes.POSICION_ESCALAR]);
+			alerta.setNode(parametro[Constantes.POSICION_NODE]);
+			alerta.setNodeAlias(parametro[Constantes.POSICION_NODEALIAS]);
+			alerta.setSeverity(parametro[Constantes.POSICION_SEVERITY]);
+			alerta.setSummary(parametro[Constantes.POSICION_SUMMARY]);
+			try {
+				alerta.setFirstOccurrence(formatterFechaAlerta.parse(parametro[Constantes.POSICION_FIRSTOCCURRENCE].replace("\"", "")));
+				alerta.setLastOccurrence(formatterFechaAlerta.parse(parametro[Constantes.POSICION_LASTOCCURRENCE].replace("\"", "")));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println(alerta);
+			listaAlertas.add(alerta);
+		});
+		
+		return listaAlertas;
+	}
+	
+	private Function<String, AlertaDTO> mapearAlertaDTO = (linea) -> {
+	
+	    SimpleDateFormat formatterFechaIBM = new SimpleDateFormat(Constantes.FORMATO_CONTRUCCION_FECHA);  
+
+		String[] parametro = linea.split(Constantes.CARACTER_SEPARADOR_ALERTAS);
+		AlertaDTO alerta = new AlertaDTO();
+		
+		alerta.setServerSerial(parametro[Constantes.POSICION_SERVERSERIAL]);
+		alerta.setSerial(parametro[Constantes.POSICION_SERIAL]);
+		alerta.setComponent(parametro[Constantes.POSICION_COMPONENT]);
+		alerta.setSubComponent(parametro[Constantes.POSICION_SUBCOMPONENT]);
+		alerta.setEscalar(parametro[Constantes.POSICION_ESCALAR]);
+		alerta.setNode(parametro[Constantes.POSICION_NODE]);
+		alerta.setNodeAlias(parametro[Constantes.POSICION_NODEALIAS]);
+		alerta.setSeverity(parametro[Constantes.POSICION_SEVERITY]);
+		alerta.setSummary(parametro[Constantes.POSICION_SUMMARY]);
+		try {
+			alerta.setFirstOccurrence(formatterFechaIBM.parse(parametro[Constantes.POSICION_FIRSTOCCURRENCE]));
+			alerta.setLastOccurrence(formatterFechaIBM.parse(parametro[Constantes.POSICION_LASTOCCURRENCE]));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return alerta;
+	};
+
+	private void construirDataCGM(List<EventoDTO> listaEventosCGM, Workbook reporteVolumetriaEventos) {
+		Sheet hojaCGM = reporteVolumetriaEventos.createSheet(Constantes.NOMBRE_SHEET_CGM);
+		Row header = hojaCGM.createRow(hojaCGM.getLastRowNum());
+		crearHeaderReporte(header,reporteVolumetriaEventos);
+		CreationHelper createHelper = reporteVolumetriaEventos.getCreationHelper();
+		CellStyle cellStyleDate = reporteVolumetriaEventos.createCellStyle();
+	    cellStyleDate.setDataFormat(
+		        createHelper.createDataFormat().getFormat(Constantes.FORMATO_CELDA_FECHA));
+	    listaEventosCGM.forEach(evento -> {
+	    	Row row = hojaCGM.createRow(hojaCGM.getLastRowNum()+1);
+  		    row.createCell(Constantes.CELDA_IDINCIDENTE_REPORTE).setCellValue(evento.getIdIncidente());
+		    row.createCell(Constantes.CELDA_SERVIDOR_REPORTE).setCellValue(evento.getAplicacion());
+		    row.createCell(Constantes.CELDA_DETALLESERVIDOR_REPORTE).setCellValue(evento.getClase());
+		    row.createCell(Constantes.CELDA_FECHAALERTA_REPORTE).setCellValue(evento.getFechaApertura());;
+		    row.getCell(Constantes.CELDA_FECHAALERTA_REPORTE).setCellStyle(cellStyleDate);
+		    row.createCell(Constantes.CELDA_FAMILIA_REPORTE).setCellValue(evento.getFamilia());
+		    row.createCell(Constantes.CELDA_TIPOFALLA_REPORTE).setCellValue(evento.getTipoFalla());
+		    row.createCell(Constantes.CELDA_DETALLEVARIABLEALERTADA_REPORTE).setCellValue(evento.getDescripcion());
+		    row.createCell(Constantes.CELDA_CRITICOMAYOR_REPORTE).setCellValue(Constantes.PRIORIDAD_CRITICA_VALOR);
+		    row.createCell(Constantes.CELDA_PLATAFORMA_REPORTE).setCellValue(evento.getPlataforma().toUpperCase());
+		    row.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(evento.getResponsable());
+		    try {
+		    	String clasificacionID = clasificacion.clasificacionCategoriaVariableAlertada(evento.getDescripcion(), Constantes.SHEET_CONDICIONES_CGM);
+			    row.createCell(Constantes.CELDA_ID_REPORTE).setCellValue(clasificacionID);
+			    row.createCell(Constantes.CELDA_VARIABLEALERTADA_REPORTE).setCellValue(clasificacionID);	
+			} catch (EncryptedDocumentException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    LocalDate localDateApertura = evento.getFechaApertura().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		    row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateApertura.getMonthValue() + "-" + localDateApertura.getYear());
+		    String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
+		    row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
+	    });
 	}
 
 	private void construirDataIBM(List<EventoDTO> listaEventosIBM, Workbook reporteVolumetriaEventos) {
@@ -118,6 +216,7 @@ public class ReporteServiceImpl implements ReporteService {
 		   row.createCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellValue(evento.getResponsable());
 		   try {
 			   String clasificacionID = clasificacion.clasificacionCategoriaVariableAlertada(evento.getDescripcion(), Constantes.SHEET_CONDICIONES_IBM);
+			   System.out.println(clasificacionID);
 			   row.createCell(Constantes.CELDA_ID_REPORTE).setCellValue(clasificacionID);
 			   row.createCell(Constantes.CELDA_VARIABLEALERTADA_REPORTE).setCellValue(clasificacionID);
 		   	} catch (EncryptedDocumentException | IOException e) {
@@ -179,6 +278,8 @@ public class ReporteServiceImpl implements ReporteService {
 		header.getCell(Constantes.CELDA_RESPONSABLE_REPORTE).setCellStyle(styleHeader);
 		header.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(Constantes.HEADER_MES_REPORTE);
 		header.getCell(Constantes.CELDA_MES_REPORTE).setCellStyle(styleHeader);
+		header.createCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellValue(Constantes.HEADER_ESCALAR_REPORTE);
+		header.getCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellStyle(styleHeader);
 		header.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(Constantes.HEADER_LINEA_BASE_REPORTE);
 		header.getCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellStyle(styleHeader);
 	}

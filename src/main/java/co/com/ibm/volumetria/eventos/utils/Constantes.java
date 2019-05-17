@@ -1,10 +1,13 @@
 package co.com.ibm.volumetria.eventos.utils;
 
+import java.util.regex.Pattern;
+
 public class Constantes {
 	//Constantes archivos excel
     public static final String IBM_XLSX_FILE_PATH = "./reportes/ibm.xlsx";
     public static final String CGM_XLSX_FILE_PATH = "./reportes/cgm.xlsx";
     public static final String CONDICIONES_XLSX_FILE_PATH = "./reportes/condiciones.xlsx";
+    public static final String ALERTAS_XLSX_FILE_PATH = "./reportes/alertas.csv";
     public static final int INDEX_FILE = 0;
     
     //Constantes posicion archivos excel IBM
@@ -30,15 +33,32 @@ public class Constantes {
     public static final int CELDA_PLATAFORMA_CGM = 11;
     public static final int CELDA_ID_CGM = 6;
     
+    //Constantes posicion archivos planos Alertas
+    public static final int POSICION_SERVERSERIAL = 0;
+    public static final int POSICION_SERIAL = 1;
+    public static final int POSICION_COMPONENT = 2;
+    public static final int POSICION_SUBCOMPONENT = 3;
+    public static final int POSICION_ESCALAR = 4;
+    public static final int POSICION_NODE = 5;
+    public static final int POSICION_NODEALIAS = 6;
+    public static final int POSICION_SEVERITY = 7;
+    public static final int POSICION_SUMMARY = 8;
+    public static final int POSICION_FIRSTOCCURRENCE = 9;
+    public static final int POSICION_LASTOCCURRENCE = 10;
+    public static final int CELDA_DATA_ALERTAS = 0;
+    
     //Constantes manejo general
     public static final String RESPONSABLE_IBM = "ibm";
     public static final String RESPONSABLE_CGM = "cgm";
+    public static final String RESPONSABLE_ALERTAS = "smi";
     public static final int PRIORIDAD_CGM = 5;
     public static final String FORMATO_CONTRUCCION_FECHA = "yyyy-MM-dd HH:mm:ss";
-    public static final String[] VARIABLES_LINEA_BASE = {"ASP","DISCO","MEMORIA","FILE SYSTEM","CPU"};
-    
-    public static final String LINEA_BASE = "Línea Base";
+    public static final String[] VARIABLES_LINEA_BASE = {"ASP","DISCO","MEMORIA","FILE SYSTEM","CPU"};    
+    public static final String LINEA_BASE = "Linea Base";
     public static final String LINEA_BASE_OTROS = "Otros";
+    public static final String CARACTER_SEPARADOR_ALERTAS = ",";
+    public static final String NO_APLICA = "N/A";
+    public static final String TIPO_FALLA_ALERTA = "alerta";
     
     //Constantes posiciones celdas reporte final
     public static final int CELDA_IDINCIDENTE_REPORTE = 0;
@@ -54,9 +74,10 @@ public class Constantes {
     public static final int CELDA_PLATAFORMA_REPORTE = 10;
     public static final int CELDA_RESPONSABLE_REPORTE = 11;
     public static final int CELDA_MES_REPORTE = 12;
-    public static final int CELDA_LINEA_BASE_REPORTE = 13;
-    public static final int CELDA_ASIGNATARIO_REPORTE = 14;
-    public static final int CELDA_GRUPOREPORTA_REPORTE = 15;
+    public static final int CELDA_ESCALAMIENTO_REPORTE = 13;
+    public static final int CELDA_LINEA_BASE_REPORTE = 14;
+    public static final int CELDA_ASIGNATARIO_REPORTE = 15;
+    public static final int CELDA_GRUPOREPORTA_REPORTE = 16;
     
     //Constantes nombres headers reporte final
     public static final String HEADER_IDINCIDENTE_REPORTE = "Evento_Critico";
@@ -72,14 +93,17 @@ public class Constantes {
     public static final String HEADER_PLATAFORMA_REPORTE = "Plataforma";
     public static final String HEADER_RESPONSABLE_REPORTE = "Responsable";
     public static final String HEADER_MES_REPORTE = "mes";
+    public static final String HEADER_ESCALAR_REPORTE = "escalar";
     public static final String HEADER_LINEA_BASE_REPORTE = "lineabase";
     public static final String NOMBRE_SHEET_IBM = "DATA IBM";
     public static final String NOMBRE_SHEET_CGM = "DATA CGM";
     public static final String FORMATO_CELDA_FECHA = "dd/MM/yyyy HH:mm:ss";
+    public static final String NOMBRE_SHEET_ALERTAS = "DATA SMI";
     
     //Constantes file expresiones regulares
     public static final int SHEET_CONDICIONES_IBM = 0;
     public static final int SHEET_CONDICIONES_CGM = 1;
+    public static final int SHEET_CONDICIONES_ALERTAS = 5;
     public static final int CELDA_EXPRESION_REGULAR = 0;
     public static final int CELDA_CATEGORIA = 1;
     public static final String CLASIFICACION_VARIABLES_OTRO = "OTRO";
@@ -99,4 +123,11 @@ public class Constantes {
     public static final int SHEET_CONDICIONES_GRUPOS = 4;
     public static final int CELDA_GRUPO = 0;
     public static final int CELDA_TORRE_GRUPO = 1;
+    
+    //Constantes escalamiento
+    public static final Pattern VALIDACION_SL = Pattern.compile("escalar\\W+(?:\\w+\\W+){0,3}?.*coordinador\\b|informar\\W+(?:\\w+\\W+){0,3}?.*coordinador\\b");
+    public static final String ESCALAMIENTO_SL = "SL";
+    public static final Pattern VALIDACION_SLL = Pattern.compile("escalar\\W+(?:\\w+\\W+){0,3}?.*team leader\\b|informar\\W+(?:\\w+\\W+){0,3}?.*team leader\\b");
+    public static final String ESCALAMIENTO_SLL = "SLL";
+    public static final String ESCALAMIENTO_ADMIN = "ADMINISTRADOR";
 }
