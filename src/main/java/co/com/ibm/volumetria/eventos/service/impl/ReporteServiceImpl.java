@@ -93,6 +93,8 @@ public class ReporteServiceImpl implements ReporteService {
 			LocalDate localDateFirstOccurrence = alerta.getFirstOccurrence().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateFirstOccurrence.getMonthValue() + "-" + localDateFirstOccurrence.getYear());
 			row.createCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellValue(clasificacion.asignarEscalamientoAlertas(alerta.getSummary().toLowerCase()));
+			String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
+		    row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
 	    });
 		
 	}
