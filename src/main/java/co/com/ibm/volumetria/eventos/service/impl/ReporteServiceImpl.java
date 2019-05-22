@@ -55,6 +55,7 @@ public class ReporteServiceImpl implements ReporteService {
 		construirDataIBM(listaEventosIBM, reporteVolumetriaEventos);
 		construirDataCGM(listaEventosCGM, reporteVolumetriaEventos);
 		construirDataAlertas(listaAlertas, reporteVolumetriaEventos);
+
 		   
 		return reporteVolumetriaEventos;
 	}
@@ -95,6 +96,7 @@ public class ReporteServiceImpl implements ReporteService {
 			row.createCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellValue(clasificacion.asignarEscalamientoAlertas(alerta.getSummary().toLowerCase()));
 			String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
 		    row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
+		    alerta.setEscalar(pertenece);
 	    });
 		
 	}

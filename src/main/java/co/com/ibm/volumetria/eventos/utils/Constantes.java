@@ -78,6 +78,7 @@ public class Constantes {
     public static final int CELDA_LINEA_BASE_REPORTE = 14;
     public static final int CELDA_ASIGNATARIO_REPORTE = 15;
     public static final int CELDA_GRUPOREPORTA_REPORTE = 16;
+    public static final int CELDA_MATCHES = 17;
     
     //Constantes nombres headers reporte final
     public static final String HEADER_IDINCIDENTE_REPORTE = "Evento_Critico";
@@ -99,6 +100,7 @@ public class Constantes {
     public static final String NOMBRE_SHEET_CGM = "DATA CGM";
     public static final String FORMATO_CELDA_FECHA = "dd/MM/yyyy HH:mm:ss";
     public static final String NOMBRE_SHEET_ALERTAS = "DATA SMI";
+    public static final String HEADER_MATCH = "matches";
     
     //Constantes file expresiones regulares
     public static final int SHEET_CONDICIONES_IBM = 0;
