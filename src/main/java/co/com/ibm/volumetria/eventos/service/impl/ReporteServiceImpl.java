@@ -187,6 +187,7 @@ public class ReporteServiceImpl implements ReporteService {
 		    row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateApertura.getMonthValue() + "-" + localDateApertura.getYear());
 		    String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
 		    row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
+			row.createCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellValue(Constantes.ESCALAMIENTO_ADMIN);
 	    });
 	}
 
@@ -229,6 +230,7 @@ public class ReporteServiceImpl implements ReporteService {
 		   row.createCell(Constantes.CELDA_MES_REPORTE).setCellValue(localDateApertura.getMonthValue() + "-" + localDateApertura.getYear());
 		   String pertenece = lineaBase.contains(row.getCell(Constantes.CELDA_ID_REPORTE).getStringCellValue().toUpperCase()) ? Constantes.LINEA_BASE : Constantes.LINEA_BASE_OTROS;
 		   row.createCell(Constantes.CELDA_LINEA_BASE_REPORTE).setCellValue(pertenece);
+		   row.createCell(Constantes.CELDA_ESCALAMIENTO_REPORTE).setCellValue(Constantes.ESCALAMIENTO_ADMIN);
 		});
 	}
 
